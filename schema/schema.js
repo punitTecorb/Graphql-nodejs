@@ -1,6 +1,6 @@
 const graphql = require('graphql');
-const user = require('../models/user');
-const provider = require('../models/provider');
+var user = require('../models/user');
+var provider = require('../models/provider');
 
 
 
@@ -19,7 +19,7 @@ const {
 
 
 const userType = new GraphQLObjectType({
-   name: 'user',
+   name: 'User',
    //We are wrapping fields in the function as we dont want to execute this ultil
    //everything is inilized. For example below code will throw an error AuthorType not
    //found if not wrapped in a function
@@ -34,7 +34,7 @@ const userType = new GraphQLObjectType({
 
 
 const providerType = new GraphQLObjectType({
-   name: 'provider',
+   name: 'Provider',
    fields: () => ({
        id: { type: GraphQLID },
        name: { type: GraphQLString },
@@ -52,7 +52,7 @@ const providerType = new GraphQLObjectType({
 const RootQuery = new GraphQLObjectType({
    name: 'RootQueryType',
    fields: {
-       user: {
+       userData: {
            type: userType,
            //argument passed by the user while making the query
            args: { id: { type: GraphQLID } },
@@ -64,8 +64,8 @@ const RootQuery = new GraphQLObjectType({
            }
        },
        providers:{
-           type: new GraphQLList(providerType),
-           resolve(parent, args) {
+        type: new GraphQLList(providerType),
+           resolve() {
                return provider.find({});
            }
        }
@@ -84,12 +84,12 @@ const Mutation = new GraphQLObjectType({
                password: { type: new GraphQLNonNull(GraphQLString)}
            },
            resolve(parent,args){
-               let user = new user({
+               let User = new user({
                    name:args.name,
                    email:args.email,
                    password:args.password
                })
-               return user.save()
+               return User.save()
            }
        },
        loginUser:{
@@ -111,13 +111,13 @@ const Mutation = new GraphQLObjectType({
             service: { type: new GraphQLNonNull(GraphQLString)}
         },
         resolve(parent,args){
-            let provider = new provider({
+            let Provider = new provider({
                 name:args.name,
                 email:args.email,
                 desc:args.desc,
                 service:args.service
             })
-            return provider.save()
+            return Provider.save()
         }
     }
    }
@@ -129,5 +129,5 @@ const Mutation = new GraphQLObjectType({
 //we will allow users to use when they are making requests.
 module.exports = new GraphQLSchema({
    query: RootQuery,
-   Mutation: Mutation
+   mutation: Mutation
 });
