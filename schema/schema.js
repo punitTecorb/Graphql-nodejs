@@ -84,12 +84,12 @@ const Mutation = new GraphQLObjectType({
                password: { type: new GraphQLNonNull(GraphQLString)}
            },
            resolve(parent,args){
-               let User = new user({
-                   name:args.name,
-                   email:args.email,
-                   password:args.password
-               })
-               return User.save()
+                let User = new user({
+                    name:args.name,
+                    email:args.email,
+                    password:args.password
+                })
+                return User.save();               
            }
        },
        loginUser:{
