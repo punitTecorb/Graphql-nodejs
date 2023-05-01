@@ -21,177 +21,175 @@ Then we declare the RootQuery which is also a GraphQL Object Type and is found a
 
 We then declare our Mutations, which are used to change data. Although any query could be implemented to change data, operations that cause changes should be sent explicitly via a mutation.
 
-## Query code mention below -
+## Query and Mutation code mention below -
 
-const graphql = require('graphql');
-const user = require('../models/user');
-const provider = require('../models/provider');
-
-
-
-const {
-   GraphQLObjectType, GraphQLString,
-   GraphQLID, GraphQLInt,GraphQLSchema,
-   GraphQLList,GraphQLNonNull
-} = graphql;
+const graphql = require('graphql');  
+const user = require('../models/user');    
+const provider = require('../models/provider');    
 
 
+const {  
+   GraphQLObjectType, GraphQLString,  
+   GraphQLID, GraphQLInt,GraphQLSchema,  
+   GraphQLList,GraphQLNonNull  
+} = graphql;    
 
-//Schema defines data on the Graph like object types(book type), relation between
-//these object types and describes how it can reach into the graph to interact with
-//the data to retrieve or mutate the data  
 
+//Schema defines data on the Graph like object types(book type), relation between  
+//these object types and describes how it can reach into the graph to interact with  
+//the data to retrieve or mutate the data    
 
-
-const userType = new GraphQLObjectType({
-   name: 'user',
-   //We are wrapping fields in the function as we dont want to execute this ultil
-   //everything is inilized. For example below code will throw an error AuthorType not
-   //found if not wrapped in a function
-   fields: () => ({
-       id: { type: GraphQLID  },
-       name: { type: GraphQLString },
-       email: { type: GraphQLString },
-       password: {type: GraphQLString}
-   })
-});
+const userType = new GraphQLObjectType({  
+   name: 'user',  
+   //We are wrapping fields in the function as we dont want to execute this ultil  
+   //everything is inilized. For example below code will throw an error AuthorType not  
+   //found if not wrapped in a function  
+   fields: () => ({  
+       id: { type: GraphQLID  },  
+       name: { type: GraphQLString },  
+       email: { type: GraphQLString },  
+       password: {type: GraphQLString}  
+   })  
+});  
 
 
 
-const providerType = new GraphQLObjectType({
-   name: 'provider',
-   fields: () => ({
-       id: { type: GraphQLID },
-       name: { type: GraphQLString },
-       email: { type: GraphQLString },
-       desc:{type: GraphQLString},
-       service:{type:GraphQLString}
-   })
-})
+const providerType = new GraphQLObjectType({  
+   name: 'provider',  
+   fields: () => ({  
+       id: { type: GraphQLID },  
+       name: { type: GraphQLString },  
+       email: { type: GraphQLString },  
+       desc:{type: GraphQLString},  
+       service:{type:GraphQLString}  
+   })  
+})  
 
 
 
-//RootQuery describe how users can use the graph and grab data.
-//E.g Root query to get all authors, get all books, get a particular
-//book or get a particular author.
-const RootQuery = new GraphQLObjectType({
-   name: 'RootQueryType',
-   fields: {
-       user: {
-           type: userType,
-           //argument passed by the user while making the query
-           args: { id: { type: GraphQLID } },
-           resolve(parent, args) {
-               //Here we define how to get data from database source
-               //this will return the book with id passed in argument
-               //by the user
-               return user.findById(args.id);
-           }
-       },
-       providers:{
-           type: new GraphQLList(providerType),
-           resolve(parent, args) {
-               return provider.find({});
-           }
-       }
-   }
-});
+//RootQuery describe how users can use the graph and grab data.  
+//E.g Root query to get all authors, get all books, get a particular  
+//book or get a particular author.  
+const RootQuery = new GraphQLObjectType({  
+   name: 'RootQueryType',  
+   fields: {  
+       user: {  
+           type: userType,  
+           //argument passed by the user while making the query  
+           args: { id: { type: GraphQLID } },  
+           resolve(parent, args) {  
+               //Here we define how to get data from database source  
+               //this will return the book with id passed in argument  
+               //by the user  
+               return user.findById(args.id);  
+           }  
+       },  
+       providers:{  
+           type: new GraphQLList(providerType),  
+           resolve(parent, args) {  
+               return provider.find({});  
+           }  
+       }  
+   }  
+});  
 
-//Very similar to RootQuery helps users to add/update to the database.
-const Mutation = new GraphQLObjectType({
-   name: 'Mutation',
-   fields: {
-       addUser:{
-           type:userType,
-           args:{
-               name: { type: new GraphQLNonNull(GraphQLString)},
-               email: { type: new GraphQLNonNull(GraphQLString)},
-               password: { type: new GraphQLNonNull(GraphQLString)}
-           },
-           resolve(parent,args){
-               let user = new user({
-                   name:args.name,
-                   email:args.email,
-                   password:args.password
-               })
-               return user.save()
-           }
-       },
-       loginUser:{
-        type:userType,
-        args:{
-            email: { type: new GraphQLNonNull(GraphQLString)},
-            password: { type: new GraphQLNonNull(GraphQLString)}
-        },
-        resolve(parent,args){
-            return user.findOne(args);
-        }
-    },
-       addProvider:{
-        type:providerType,
-        args:{
-            name: { type: new GraphQLNonNull(GraphQLString)},
-            email: { type: new GraphQLNonNull(GraphQLString)},
-            desc: { type: new GraphQLNonNull(GraphQLString)},
-            service: { type: new GraphQLNonNull(GraphQLString)}
-        },
-        resolve(parent,args){
-            let provider = new provider({
-                name:args.name,
-                email:args.email,
-                desc:args.desc,
-                service:args.service
-            })
-            return provider.save()
-        }
-    }
-   }
-});
+//Very similar to RootQuery helps users to add/update to the database.  
+const Mutation = new GraphQLObjectType({  
+   name: 'Mutation',  
+   fields: {  
+       addUser:{  
+           type:userType,  
+           args:{  
+               name: { type: new GraphQLNonNull(GraphQLString)},  
+               email: { type: new GraphQLNonNull(GraphQLString)},  
+               password: { type: new GraphQLNonNull(GraphQLString)}  
+           },  
+           resolve(parent,args){  
+               let user = new user({  
+                   name:args.name,  
+                   email:args.email,  
+                   password:args.password  
+               })  
+               return user.save()  
+           }  
+       },  
+       loginUser:{  
+        type:userType,  
+        args:{  
+            email: { type: new GraphQLNonNull(GraphQLString)},  
+            password: { type: new GraphQLNonNull(GraphQLString)}  
+        },  
+        resolve(parent,args){  
+            return user.findOne(args);  
+        }  
+    },  
+       addProvider:{  
+        type:providerType,  
+        args:{  
+            name: { type: new GraphQLNonNull(GraphQLString)},  
+            email: { type: new GraphQLNonNull(GraphQLString)},  
+            desc: { type: new GraphQLNonNull(GraphQLString)},  
+            service: { type: new GraphQLNonNull(GraphQLString)}  
+        },  
+        resolve(parent,args){  
+            let provider = new provider({  
+                name:args.name,  
+                email:args.email,  
+                desc:args.desc,  
+                service:args.service  
+            })  
+            return provider.save()  
+        }  
+    }  
+   }  
+});  
 
 
-## Graph query requests -- 
+## Graph query requests --   
 
-Mutations - 
-Signup ---
-mutation{
-  addUser(name: "punit",email: "punit@tecorb.co",password: "1234567"){
-    id
-    name
-    email
-  }
-}
+Mutations -   
 
-Login ---
-mutation{
-  loginUser(email: "punit@tecorb.co",password: "1234567"){
-    id
-    name
-    email
-  }
-}
+Signup ---  
+mutation{  
+  addUser(name: "abc",email: "abc@gmail.com",password: "1234567"){  
+    id  
+    name  
+    email  
+  }  
+}  
 
-Add Provider ---
-mutation{
-  addProvider(name:"Punit Sharma",email: "punit@tecorb.co",desc: "Good Provider",service:"Car washing"){
-    id
-    name
-    email
-    desc
-    service
-  }
-}
+Login ---  
+mutation{  
+  loginUser(email: "abc@gmail.com",password: "1234567"){  
+    id  
+    name  
+    email  
+  }  
+}  
 
-Query --
-Get provider ---
-{
-  providers{
-    id
-    name
-    email
-    desc
-    service
-  }
-} 
+Add Provider ---  
+mutation{  
+  addProvider(name:"abc",email: "abc@gmail.com",desc: "Good Provider",service:"Car washing"){  
+    id  
+    name  
+    email  
+    desc  
+    service  
+  }  
+}  
+
+Query --  
+
+Get provider ---  
+{  
+  providers{  
+    id  
+    name  
+    email  
+    desc  
+    service  
+  }  
+}   
 
 ## Project Setup Steps:
 ### Required details for setup this project
