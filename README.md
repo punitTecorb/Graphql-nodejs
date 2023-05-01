@@ -21,19 +21,18 @@ Then we declare the RootQuery which is also a GraphQL Object Type and is found a
 
 We then declare our Mutations, which are used to change data. Although any query could be implemented to change data, operations that cause changes should be sent explicitly via a mutation.
 
-## Query code mention below -
+## Query and Mutation code mention below -
 
-const graphql = require('graphql');
-const user = require('../models/user');
-const provider = require('../models/provider');
-
+const graphql = require('graphql');  
+const user = require('../models/user');  
+const provider = require('../models/provider');  
 
 
 const {
    GraphQLObjectType, GraphQLString,
    GraphQLID, GraphQLInt,GraphQLSchema,
    GraphQLList,GraphQLNonNull
-} = graphql;
+} = graphql;  
 
 
 
