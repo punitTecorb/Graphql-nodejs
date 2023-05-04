@@ -27,13 +27,11 @@ const graphql = require('graphql');
 const user = require('../models/user');    
 const provider = require('../models/provider');    
 
-
 const {  
    GraphQLObjectType, GraphQLString,  
    GraphQLID, GraphQLInt,GraphQLSchema,  
    GraphQLList,GraphQLNonNull  
 } = graphql;    
-
 
 //Schema defines data on the Graph like object types(book type), relation between  
 //these object types and describes how it can reach into the graph to interact with  
@@ -52,8 +50,6 @@ const userType = new GraphQLObjectType({
    })  
 });  
 
-
-
 const providerType = new GraphQLObjectType({  
    name: 'provider',  
    fields: () => ({  
@@ -64,8 +60,6 @@ const providerType = new GraphQLObjectType({
        service:{type:GraphQLString}  
    })  
 })  
-
-
 
 //RootQuery describe how users can use the graph and grab data.  
 //E.g Root query to get all authors, get all books, get a particular  
@@ -143,7 +137,6 @@ const Mutation = new GraphQLObjectType({
     }  
    }  
 });  
-
 
 ## Graph query requests --   
 
