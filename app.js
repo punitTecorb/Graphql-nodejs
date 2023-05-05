@@ -3,7 +3,8 @@ const graphqlHTTP = require('express-graphql').graphqlHTTP;
 const schema = require('./schema/schema');
 const mongoose = require('mongoose'); 
 const cors = require('cors');
-mongoose.connect('your db url'); 
+const db_url = '';
+mongoose.connect(db_url); 
 mongoose.connection.once('open', () => { 
    console.log('connected to database'); 
 }); 

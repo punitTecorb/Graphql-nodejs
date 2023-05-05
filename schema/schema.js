@@ -92,7 +92,7 @@ const Mutation = new GraphQLObjectType({
             return user.findOne(args);
         }
     },
-       addProvider:{
+    addProvider:{
         type:providerType,
         args:{
             name: { type: new GraphQLNonNull(GraphQLString)},
@@ -108,6 +108,15 @@ const Mutation = new GraphQLObjectType({
                 service:args.service
             })
             return Provider.save()
+        }
+    },
+    getProviderById:{
+        type:providerType,
+        args:{
+            _id: { type: new GraphQLNonNull(GraphQLString)}
+        },
+        resolve(parent,args){
+            return Provider.findOne(args);
         }
     }
    }
