@@ -54,6 +54,14 @@ const RootQuery = new GraphQLObjectType({
                return user.findById(args.id);
             }
         },
+        // Get user count
+        userCount: {
+            type: userType,
+            args: {},
+            resolve(parent, args) {
+               return user.countDocuments();
+            }
+        },
         // Get all providers
         providers:{
             type: new GraphQLList(providerType),
@@ -132,7 +140,7 @@ const Mutation = new GraphQLObjectType({
                 _id: { type: new GraphQLNonNull(GraphQLString)}
             },
             resolve(parent,args){
-                return Provider.findOne(args);
+                return provider.findOne(args);
             }
         }
     }
