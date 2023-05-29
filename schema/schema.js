@@ -70,7 +70,7 @@ const RootQuery = new GraphQLObjectType({
             }
         },
         // Get all providers with pagination
-        providers:{
+        providerWithPage:{
             type: new GraphQLList(providerType),
             resolve() {
                return provider.find({}).skip(10*1).limit(10);
