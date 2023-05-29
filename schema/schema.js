@@ -68,6 +68,13 @@ const RootQuery = new GraphQLObjectType({
             resolve() {
                return provider.find({});
             }
+        },
+        // Get all providers with pagination
+        providerWithPage:{
+            type: new GraphQLList(providerType),
+            resolve() {
+               return provider.find({}).skip(10*1).limit(10);
+            }
         }
     }
 });
@@ -114,7 +121,7 @@ const Mutation = new GraphQLObjectType({
                 return user.findOne(args);
             }
         },
-        // Create provide
+        // Create provider
         addProvider:{
             type:providerType,
             args:{
@@ -133,7 +140,7 @@ const Mutation = new GraphQLObjectType({
                 return Provider.save()
             }
         },
-        // Get provide based on id
+        // Get provider based on id
         getProviderById:{
             type:providerType,
             args:{
