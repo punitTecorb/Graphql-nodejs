@@ -1,7 +1,7 @@
 # Graphql-nodejs
 
 ## Introduction
-GraphQl api using nodejs with javascript.For create GraphQl api we are using graphql liberary in nodejs.
+GraphQl api using nodejs with javascript and typescript. For create GraphQl api we are using graphql liberary in nodejs.
 
 GraphQL is a query language for APIs and a runtime for fulfilling those queries with your existing data.
 
@@ -21,11 +21,12 @@ Then we declare the RootQuery which is also a GraphQL Object Type and is found a
 
 We then declare our Mutations, which are used to change data. Although any query could be implemented to change data, operations that cause changes should be sent explicitly via a mutation.
 
+## GraphQl Base url -- 
+http://localhost:5000/graphql
+
 ## Query and Mutation code mention below -
 
 const graphql = require('graphql');  
-const user = require('../models/user');    
-const provider = require('../models/provider');    
 
 const {  
    GraphQLObjectType, GraphQLString,  
@@ -33,163 +34,206 @@ const {
    GraphQLList,GraphQLNonNull  
 } = graphql;    
 
-//Schema defines data on the Graph like object types(book type), relation between  
-//these object types and describes how it can reach into the graph to interact with  
-//the data to retrieve or mutate the data    
+## User query and mutation
+const user_resolvers = {
+    Query: {
+        async getUser(_: any, ID: any) {
+            var id = ID
+            console.log(id, "id", id.ID)
+            const details = await userModel.findById({ _id: id.ID })
+            if (details) {
+                console.log(details, "details1222")
+                details.name = "ssss"
+                details.count = 12
+                return details;
+            } else {
+                throw new ApolloError('User is not exists')
+            }
+        },
+        async user(_: any, count: any) {
+            var limit = count
+            const list = await userModel.find().sort({ createdAt: -1 }).limit(limit.amount)
+            return list
+        }
+    },
+    Mutation: {
+        //add
+        async createUser(_: any, userInput: any) {
+            const data = userInput
+            const { name, email, phoneNumber, address, qualification } = data.userInput
+            const body = {
+                "name": name,
+                "email": email,
+                "phoneNumber": phoneNumber,
+                "details": {
+                    "address": address,
+                    "qualification": qualification
+                }
+            }
+            const details = await userModel.findOne({ email: email });
+            if (details) {
+                throw new ApolloError('User is already exists')
+            } else {
+                const res: any = (await userModel.create(body)).save();
+                return { res };
+            }
+        },
+        //edit
+        async editUser(_: any, ID: any, userInput: any) {
+            const data = ID
+            const { name, email, phoneNumber } = data.userInput
+            const id = data.ID
+            const res = (await userModel.updateOne({ _id: id }, { name: name, email: email, phoneNumber: phoneNumber })).modifiedCount;
+            return res;
+        },
+        //delete
+        async deleteUser(_: any, ID: any) {
+            const data = ID
+            const id = data.ID
+            const res = (await userModel.deleteOne({ _id: id })).deletedCount
+            return { res };
+        },
+    }
+}
 
-const userType = new GraphQLObjectType({  
-   name: 'user',  
-   //We are wrapping fields in the function as we dont want to execute this ultil  
-   //everything is inilized. For example below code will throw an error AuthorType not  
-   //found if not wrapped in a function  
-   fields: () => ({  
-       id: { type: GraphQLID  },  
-       name: { type: GraphQLString },  
-       email: { type: GraphQLString },  
-       password: {type: GraphQLString}  
-   })  
-});  
+## Vendor query and mutation
+const vendor_resolvers = {
+    Query: {
+        getVendor: async (_: any, ID: any, userId: any) => {
+            return new Promise(async (resolve, reject) => {
+                if (JSON.stringify(userId) === '{}') {
+                    reject(new CustomError('Invalid Token', StatusCodes.NON_AUTHORITATIVE_INFORMATION));
+                } else {
+                    const details = await vendorModel.findById({ _id: userId.id })
+                    if (details) {
+                        details.name = "ssss"
+                        details.count = 12
+                        resolve({ vendor: details, message: "Success", code: 200 });
+                    } else {
+                        reject(new CustomError('Vendor is not exists', StatusCodes.BAD_REQUEST))
+                    }
+                }
+            })
+        },
+        async vendor(_: any, count: any) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    var limit = count
+                    let Array: any = []
+                    const list = await vendorModel.find().sort({ createdAt: -1 }).skip((limit.perPage * limit.page) - limit.perPage).limit(limit.perPage);
+                    const totalCount = await vendorModel.count();
+                    if (list.length) {
+                        list.map((data: any) => {
+                            if (data.name == "Aashu") {
+                                data.totalSum = 2
+                            }
+                            Array.push(data)
+                        })
+                    }
+                    resolve(
+                        {
+                            totalCount: totalCount,
+                            vendorList: Array,
+                            message: "Record fetch successfully",
+                            code: StatusCodes.OK
+                        }
+                    );
+                } catch (err) {
+                    reject(err);
+                }
+            })
 
-const providerType = new GraphQLObjectType({  
-   name: 'provider',  
-   fields: () => ({  
-       id: { type: GraphQLID },  
-       name: { type: GraphQLString },  
-       email: { type: GraphQLString },  
-       desc:{type: GraphQLString},  
-       service:{type:GraphQLString}  
-   })  
-})  
+        }
+    },
+    Mutation: {
+        //add
+        async createVendor(_: any, vendorInput: any) {
+            const data = vendorInput
+            const { name, email, phoneNumber, password } = data.vendorInput
+            const body: any = {
+                "name": name,
+                "email": email,
+                "phoneNumber": phoneNumber
+            }
+            const details = await vendorModel.findOne({ email: email });
+            if (details) {
+                throw new ApolloError('Vendor is already exists')
+            } else {
+                const pass = bcrypt.hashSync(password, 10);
+                body.password = pass;
+                const res: any = await vendorModel.create(body);
+                const token: string = jwt.sign({
+                    id: res.id,
+                    role: "Vendor",
+                    userId: res._id
+                }, 'str34eet', { expiresIn: '30d' })
+                await sessionModel.create({ role: "Vendor", userId: res._id, status: true, token: token });
+                res.token = token
+                return (res);
+            }
+        },
+        //login
+        async loginVendor(_: any, loginInput: any) {
+            try {
+                const input = loginInput
+                const details: any = await vendorModel.findOne({ email: input.loginInput.email });
+                if (details) {
+                    var match = bcrypt.compareSync(input.loginInput.password, details.password);
+                    if (match == false) {
+                        throw new Error('Wrong Password')
+                    } else {
+                        const token: any = jwt.sign({
+                            id: details.id,
+                            role: "Vendor",
+                            userId: details._id
+                        }, 'str34eet', { expiresIn: '30d' })
+                        await sessionModel.create({ role: "Vendor", userId: details._id, status: true, token: token });
+                        details.token = token
+                        return {
+                            vendor: details,
+                            message: 'Login successfully',
+                            code: 200
+                        };
+                    }
+                } else {
+                    throw new Error('Eamil is not Exists')
+                }
 
-//RootQuery describe how users can use the graph and grab data.  
-//E.g Root query to get all authors, get all books, get a particular  
-//book or get a particular author.  
-const RootQuery = new GraphQLObjectType({  
-   name: 'RootQueryType',  
-   fields: {  
-       user: {  
-           type: userType,  
-           //argument passed by the user while making the query  
-           args: { id: { type: GraphQLID } },  
-           resolve(parent, args) {  
-               //Here we define how to get data from database source  
-               //this will return the book with id passed in argument  
-               //by the user  
-               return user.findById(args.id);  
-           }  
-       },  
-       providers:{  
-           type: new GraphQLList(providerType),  
-           resolve(parent, args) {  
-               return provider.find({});  
-           }  
-       }  
-   }  
-});  
+            } catch (err: any) {
+                throw new Error(err.message)
+            }
+        },
+        //edit
+        async editVendor(_: any, ID: any,) {
+            // if (JSON.stringify(user) === '{}') {
+            //     throw new AuthenticationError('Token Expired')
+            // } else {
+                const data = ID
+                console.log(data.ID,"LSLS")
 
-//Very similar to RootQuery helps users to add/update to the database.  
-const Mutation = new GraphQLObjectType({  
-   name: 'Mutation',  
-   fields: {  
-       addUser:{  
-           type:userType,  
-           args:{  
-               name: { type: new GraphQLNonNull(GraphQLString)},  
-               email: { type: new GraphQLNonNull(GraphQLString)},  
-               password: { type: new GraphQLNonNull(GraphQLString)}  
-           },  
-           resolve(parent,args){  
-               let user = new user({  
-                   name:args.name,  
-                   email:args.email,  
-                   password:args.password  
-               })  
-               return user.save()  
-           }  
-       },  
-       loginUser:{  
-        type:userType,  
-        args:{  
-            email: { type: new GraphQLNonNull(GraphQLString)},  
-            password: { type: new GraphQLNonNull(GraphQLString)}  
-        },  
-        resolve(parent,args){  
-            return user.findOne(args);  
-        }  
-    },  
-       addProvider:{  
-        type:providerType,  
-        args:{  
-            name: { type: new GraphQLNonNull(GraphQLString)},  
-            email: { type: new GraphQLNonNull(GraphQLString)},  
-            desc: { type: new GraphQLNonNull(GraphQLString)},  
-            service: { type: new GraphQLNonNull(GraphQLString)}  
-        },  
-        resolve(parent,args){  
-            let provider = new provider({  
-                name:args.name,  
-                email:args.email,  
-                desc:args.desc,  
-                service:args.service  
-            })  
-            return provider.save()  
-        }  
-    }  
-   }  
-});  
+                const { name, email, phoneNumber } = data.vendorInput
+                const res = (await vendorModel.updateOne({ _id: data.ID }, { name: name, email: email, phoneNumber: phoneNumber })).modifiedCount;
+                return res;
+            // }
 
-## Graph query requests --   
-
-Mutations -   
-
-Signup ---  
-mutation{  
-  addUser(name: "abc",email: "abc@gmail.com",password: "1234567"){  
-    id  
-    name  
-    email  
-  }  
-}  
-
-Login ---  
-mutation{  
-  loginUser(email: "abc@gmail.com",password: "1234567"){  
-    id  
-    name  
-    email  
-  }  
-}  
-
-Add Provider ---  
-mutation{  
-  addProvider(name:"abc",email: "abc@gmail.com",desc: "Good Provider",service:"Car washing"){  
-    id  
-    name  
-    email  
-    desc  
-    service  
-  }  
-}  
-
-Query --  
-
-Get provider ---  
-{  
-  providers{  
-    id  
-    name  
-    email  
-    desc  
-    service  
-  }  
-}   
+        },
+        //delete
+        async deleteVendor(_: any, ID: any) {
+            const data = ID
+            const id = data.ID
+            const res = (await vendorModel.deleteOne({ _id: id })).deletedCount
+            return { res };
+        },
+    }
+}
 
 ## Project Setup Steps:
 ### Required details for setup this project
-   1. Add your mongodb database string in main file.
+   1. Add your mongodb database string in env file
+   2. Add your jwt token in env file.
 ### Install project dependency
 `npm install`
 ### local server
-`node app.js`
+`npm run start:dev`
 ### prod build
-`node app.js`
+`npm run start:dev`
