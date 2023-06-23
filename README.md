@@ -24,7 +24,7 @@ We then declare our Mutations, which are used to change data. Although any query
 ## GraphQl Base url -- 
 http://localhost:5000/graphql
 
-## Query and Mutation code mention below -
+## GraphQl  -
 
 const graphql = require('graphql');  
 
@@ -33,6 +33,8 @@ const {
    GraphQLID, GraphQLInt,GraphQLSchema,  
    GraphQLList,GraphQLNonNull  
 } = graphql;    
+
+## Query and Mutation code mention below -
 
 ## User query and mutation
 const user_resolvers = {
@@ -154,7 +156,7 @@ const vendor_resolvers = {
             })
         }
     },
-    
+
     Mutation: {
 
         //add
