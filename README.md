@@ -252,4 +252,4 @@ const vendor_resolvers = {
 ### local server
 `npm run start:dev`
 ### prod build
-`npm run start:dev`
+`npm run build`
