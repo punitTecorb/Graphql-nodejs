@@ -24,7 +24,7 @@ We then declare our Mutations, which are used to change data. Although any query
 ## GraphQl Base url -- 
 http://localhost:5000/graphql
 
-## Query and Mutation code mention below -
+## GraphQl  -
 
 const graphql = require('graphql');  
 
@@ -34,9 +34,13 @@ const {
    GraphQLList,GraphQLNonNull  
 } = graphql;    
 
+## Query and Mutation code mention below -
+
 ## User query and mutation
 const user_resolvers = {
+
     Query: {
+
         async getUser(_: any, ID: any) {
             var id = ID
             console.log(id, "id", id.ID)
@@ -50,13 +54,16 @@ const user_resolvers = {
                 throw new ApolloError('User is not exists')
             }
         },
+
         async user(_: any, count: any) {
             var limit = count
             const list = await userModel.find().sort({ createdAt: -1 }).limit(limit.amount)
             return list
         }
     },
+
     Mutation: {
+
         //add
         async createUser(_: any, userInput: any) {
             const data = userInput
@@ -78,6 +85,7 @@ const user_resolvers = {
                 return { res };
             }
         },
+
         //edit
         async editUser(_: any, ID: any, userInput: any) {
             const data = ID
@@ -86,6 +94,7 @@ const user_resolvers = {
             const res = (await userModel.updateOne({ _id: id }, { name: name, email: email, phoneNumber: phoneNumber })).modifiedCount;
             return res;
         },
+
         //delete
         async deleteUser(_: any, ID: any) {
             const data = ID
@@ -98,7 +107,9 @@ const user_resolvers = {
 
 ## Vendor query and mutation
 const vendor_resolvers = {
+
     Query: {
+
         getVendor: async (_: any, ID: any, userId: any) => {
             return new Promise(async (resolve, reject) => {
                 if (JSON.stringify(userId) === '{}') {
@@ -115,6 +126,7 @@ const vendor_resolvers = {
                 }
             })
         },
+        
         async vendor(_: any, count: any) {
             return new Promise(async (resolve, reject) => {
                 try {
@@ -142,10 +154,11 @@ const vendor_resolvers = {
                     reject(err);
                 }
             })
-
         }
     },
+
     Mutation: {
+
         //add
         async createVendor(_: any, vendorInput: any) {
             const data = vendorInput
@@ -172,6 +185,7 @@ const vendor_resolvers = {
                 return (res);
             }
         },
+
         //login
         async loginVendor(_: any, loginInput: any) {
             try {
@@ -203,6 +217,7 @@ const vendor_resolvers = {
                 throw new Error(err.message)
             }
         },
+
         //edit
         async editVendor(_: any, ID: any,) {
             // if (JSON.stringify(user) === '{}') {
@@ -217,6 +232,7 @@ const vendor_resolvers = {
             // }
 
         },
+
         //delete
         async deleteVendor(_: any, ID: any) {
             const data = ID
